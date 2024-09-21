@@ -4,47 +4,50 @@ class scenePlay extends Phaser.Scene {
   }
 
   create() {
-    this.road1 = this.add.image(
-      250, 
-      250, 
-      "road"
-    );
+    this.road1 = this.add.image(250, 250, "road");
 
     this.road1.setScale(8.5);
 
-    
-    this.car = this.physics.add.sprite(250, 400, "player").setScale(3);
+    this.car = this.physics.add.sprite(250, 400, "player").setScale(2);
     this.car.setCollideWorldBounds(true);
+    this.car.setOrigin(0.5, 0.5); 
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.carSpeed = 0;  // Velocidad inicial del auto
+    this.carSpeed = 0; // Velocidad inicial del auto
     this.acceleration = 5.05; // Aumento porcentual de la velocidad
     this.deceleration = 0.95; // Disminución porcentual de la velocidad
-    this.maxSpeed = 50; // Velocidad máxima
-    this.minSpeed = -50;  // Velocidad mínima 
+    this.maxSpeed = 200; // Velocidad máxima
+    this.minSpeed = -50; // Velocidad mínima
 
-    this.speedText = this.add.text(10, 10, 'Velocidad: 100', { fontSize: '20px', fill: '#fff' });
-    this.accelerationText = this.add.text(10, 40, 'Aceleración: 1.05', { fontSize: '20px', fill: '#fff' });
+    this.steeringAngle = 0; // Giro inicial
+    this.maxSteeringAngle = Math.PI / 4; // Angulo giro máximo
+    this.wheelBase = 10; // Distancia entre ejes
+
+    this.speedText = this.add.text(10, 10, "Velocidad: 100", {
+      fontSize: "20px",
+      fill: "#fff",
+    });
+    this.accelerationText = this.add.text(10, 40, "Aceleración: 1.05", {
+      fontSize: "20px",
+      fill: "#fff",
+    });
   }
 
   update(time, delta) {
-
     let deltaTime = delta / 1000;
 
     // AUTO
 
     console.log(this.carSpeed);
     console.log(this.acceleration);
-    
+
     if (this.cursors.up.isDown) {
-      // Aceleración hacia adelante
       this.carSpeed += this.acceleration * deltaTime;
       if (this.carSpeed > this.maxSpeed) {
         this.carSpeed = this.maxSpeed;
       }
     } else if (this.cursors.down.isDown) {
-      // Aceleración hacia atrás
       this.carSpeed -= this.acceleration * deltaTime;
       if (this.carSpeed < this.minSpeed) {
         this.carSpeed = this.minSpeed;
@@ -63,14 +66,25 @@ class scenePlay extends Phaser.Scene {
       }
     }
 
-    this.car.setVelocity(0, -this.carSpeed);
-
+    // this.car.setVelocity(0, -this.carSpeed);
 
     if (this.cursors.left.isDown) {
-      this.car.setVelocityX(-50);
+      this.steeringAngle = -this.maxSteeringAngle;
     } else if (this.cursors.right.isDown) {
-      this.car.setVelocityX(50);
+      this.steeringAngle = this.maxSteeringAngle;
+    } else {
+      this.steeringAngle = 0;
     }
+
+    let turningRadius = this.wheelBase / Math.tan(this.steeringAngle);
+    let angularVelocity = this.carSpeed / turningRadius;
+
+    this.car.rotation += angularVelocity * deltaTime;
+    
+    this.car.setVelocity(
+      this.carSpeed * Math.sin(this.car.rotation),
+      -this.carSpeed * Math.cos(this.car.rotation)
+    );
 
     if (this.cursors.space.isDown) {
       this.carSpeed *= this.deceleration;
@@ -79,8 +93,16 @@ class scenePlay extends Phaser.Scene {
       }
     }
 
-    this.speedText.setText('Velocidad: ' + this.carSpeed.toFixed(2));
-    this.accelerationText.setText('Aceleración: ' + (this.carSpeed >= this.minSpeed ? this.acceleration : this.deceleration).toFixed(2));
+    // VELOCÍMETRO
+
+    this.speedText.setText("Velocidad: " + this.carSpeed.toFixed(2));
+    this.accelerationText.setText(
+      "Aceleración: " +
+        (this.carSpeed >= this.minSpeed
+          ? this.acceleration
+          : this.deceleration
+        ).toFixed(2)
+    );
   }
 }
 
