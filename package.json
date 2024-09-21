@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "phaser": "^3.85.2"
+  },
+  "name": "spaceracejs",
+  "description": "Aplicación de programación de vehículos autonomos con el fin de aprender algoritmos de optimización básicos, utilizando JS.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenjaminAGH/SpaceRaceJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BenjaminAGH/SpaceRaceJS/issues"
+  },
+  "homepage": "https://github.com/BenjaminAGH/SpaceRaceJS#readme"
+}
