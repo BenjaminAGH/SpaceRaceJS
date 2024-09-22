@@ -13,7 +13,7 @@ class bootloader extends Phaser.Scene {
         this.load.atlas("player", "player_blue.png", "player_blue_atlas.json"); 
 
         this.load.path = "./assets/Levels/";
-        this.load.image("road", "Summer_road.png");
+        this.load.image("road", "road_test.png");
 
 
     }

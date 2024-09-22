@@ -6,11 +6,15 @@ class scenePlay extends Phaser.Scene {
   create() {
     this.road1 = this.add.image(250, 250, "road");
 
-    this.road1.setScale(8.5);
+    this.road1.setScale(1);
 
-    this.car = this.physics.add.sprite(250, 400, "player").setScale(2);
+    this.car = this.physics.add.sprite(250, 350, "player").setScale(1);
     this.car.setCollideWorldBounds(true);
-    this.car.setOrigin(0.5, 0.5); 
+    this.car.setOrigin(0.5, 0.5);
+
+    // Ajustar el tamaño de la hitbox del auto
+    this.car.body.setSize(5, 5);
+    this.car.body.setOffset(5, 5);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -22,7 +26,7 @@ class scenePlay extends Phaser.Scene {
 
     this.steeringAngle = 0; // Giro inicial
     this.maxSteeringAngle = Math.PI / 4; // Angulo giro máximo
-    this.wheelBase = 10; // Distancia entre ejes
+    this.wheelBase = 50; // Distancia entre ejes
 
     this.speedText = this.add.text(10, 10, "Velocidad: 100", {
       fontSize: "20px",
@@ -32,6 +36,62 @@ class scenePlay extends Phaser.Scene {
       fontSize: "20px",
       fill: "#fff",
     });
+
+    // Crear un mapa de bits a partir de la imagen 'road'
+    let roadBitmap = this.textures.get("road").getSourceImage();
+    let roadCanvas = this.textures.createCanvas(
+      "roadCanvas",
+      roadBitmap.width,
+      roadBitmap.height
+    );
+    roadCanvas.draw(0, 0, roadBitmap);
+
+    // Crear un gráfico para dibujar los bordes
+    this.graphics = this.add.graphics({ lineStyle: { width: 1, color: 0xff0000 } });
+
+    // Crear un gráfico para dibujar la hitbox del auto
+    this.carGraphics = this.add.graphics({ lineStyle: { width: 1, color: 0x00ff00 } });    
+
+    // Detectar las áreas rojas y crear zonas de colisión
+    this.createCollisionZones(roadCanvas);
+  }
+
+  createCollisionZones(roadCanvas) {
+    let context = roadCanvas.context;
+    let imageData = context.getImageData(0, 0, roadCanvas.width, roadCanvas.height);
+    let data = imageData.data;
+  
+    let collisionZones = this.physics.add.staticGroup();
+  
+    for (let y = 0; y < roadCanvas.height; y++) {
+      for (let x = 0; x < roadCanvas.width; x++) {
+        let index = (y * roadCanvas.width + x) * 4;
+        let red = data[index];
+        let green = data[index + 1];
+        let blue = data[index + 2];
+  
+        // Detectar píxeles rojos
+        if (red > 200 && green < 50 && blue < 50) {
+          // Crear una zona de colisión en la posición detectada
+          let zone = this.add.zone(x, y, 1, 1).setOrigin(0, 0);
+          collisionZones.add(zone);
+
+          this.graphics.strokeRect(x, y, 1, 1);
+        }
+      }
+    }
+  
+    // Habilitar la física para las zonas de colisión
+    this.physics.world.enable(collisionZones);
+  
+    // Configurar la colisión entre el auto y las zonas de colisión
+    this.physics.add.collider(this.car, collisionZones, this.handleCollision, null, this);
+  }
+
+  handleCollision(car, zone) {
+    // Manejar la colisión entre el auto y los bordes de la pista
+    console.log('Colisión con el borde de la pista');
+    this.carSpeed = 0; // Detener el auto en caso de colisión
   }
 
   update(time, delta) {
@@ -80,7 +140,7 @@ class scenePlay extends Phaser.Scene {
     let angularVelocity = this.carSpeed / turningRadius;
 
     this.car.rotation += angularVelocity * deltaTime;
-    
+
     this.car.setVelocity(
       this.carSpeed * Math.sin(this.car.rotation),
       -this.carSpeed * Math.cos(this.car.rotation)
@@ -103,6 +163,15 @@ class scenePlay extends Phaser.Scene {
           : this.deceleration
         ).toFixed(2)
     );
+
+    // Dibujar la hitbox del auto
+    this.carGraphics.clear();
+    this.carGraphics.strokeRect(
+        this.car.body.x,
+        this.car.body.y,
+        this.car.body.width,
+        this.car.body.height
+    );    
   }
 }
 
