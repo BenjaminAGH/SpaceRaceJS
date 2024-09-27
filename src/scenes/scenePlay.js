@@ -15,7 +15,7 @@ class scenePlay extends Phaser.Scene {
     this.road1 = this.add.image(250, 250, "road");
     this.road1.setScale(1);
 
-    this.carPlayer = new CarPlayer(this, 250, 350, "player");
+    this.carPlayer = new CarPlayer(this, 89, 200, "player");
 
     // Crear un mapa de bits a partir de la imagen 'road'
     let roadBitmap = this.textures.get("road").getSourceImage();
